@@ -12,6 +12,7 @@ let firstOperand = null;
 let pendingOperator = null;
 let currentInput = "0";
 let justEvaluated = false;
+let awaitingNewInput = false;
 
 function updateDisplay() {
   resultEl.textContent = currentInput;
@@ -28,9 +29,10 @@ function formatNumber(value) {
 }
 
 function inputDigit(digit) {
-  if (justEvaluated) {
+  if (justEvaluated || awaitingNewInput) {
     currentInput = digit === "." ? "0." : digit;
     justEvaluated = false;
+    awaitingNewInput = false;
     return;
   }
   if (digit === "." && currentInput.includes(".")) return;
@@ -46,6 +48,7 @@ function clearAll() {
   pendingOperator = null;
   currentInput = "0";
   justEvaluated = false;
+  awaitingNewInput = false;
 }
 
 function backspace() {
@@ -54,11 +57,6 @@ function backspace() {
     return;
   }
   currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0";
-}
-
-function toggleSign() {
-  if (currentInput === "0") return;
-  currentInput = currentInput.startsWith("-") ? currentInput.slice(1) : `-${currentInput}`;
 }
 
 function applyPercent() {
@@ -93,6 +91,7 @@ function chooseOperator(op) {
 
   pendingOperator = op;
   justEvaluated = false;
+  awaitingNewInput = true;
 }
 
 function evaluate() {
