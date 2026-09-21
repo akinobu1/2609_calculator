@@ -1,13 +1,18 @@
 :root {
-  --bg: #1b1c22;
-  --calc-bg: #24252d;
-  --display-bg: #14151a;
-  --key-bg: #32333d;
-  --key-bg-hover: #3d3e4a;
+  --bg-1: #1a1b3a;
+  --bg-2: #2d1b4e;
+  --bg-3: #16213e;
+  --calc-bg: rgba(36, 37, 45, 0.65);
+  --calc-border: rgba(255, 255, 255, 0.08);
+  --display-bg: rgba(10, 11, 20, 0.55);
+  --key-bg: rgba(255, 255, 255, 0.06);
+  --key-bg-hover: rgba(255, 255, 255, 0.12);
   --accent: #ff9f43;
   --accent-hover: #ffb35c;
+  --accent-glow: rgba(255, 159, 67, 0.45);
   --equals: #4caf50;
   --equals-hover: #5cc95f;
+  --equals-glow: rgba(76, 175, 80, 0.55);
   --text: #f5f5f7;
   --text-dim: #9a9ba5;
 }
@@ -22,25 +27,55 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  background: linear-gradient(135deg, var(--bg-1), var(--bg-2) 45%, var(--bg-3));
+  background-size: 200% 200%;
+  animation: drift 18s ease infinite;
   font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
   padding: 16px;
+  overflow: hidden;
+}
+
+@keyframes drift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .calculator {
+  position: relative;
   width: 100%;
   max-width: 340px;
   background: var(--calc-bg);
-  border-radius: 20px;
+  border: 1px solid var(--calc-border);
+  border-radius: 24px;
   padding: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .display {
+  position: relative;
   background: var(--display-bg);
-  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   padding: 20px 16px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   text-align: right;
   overflow: hidden;
 }
@@ -51,14 +86,40 @@ body {
   min-height: 1.2em;
   overflow-x: auto;
   white-space: nowrap;
+  transition: opacity 0.15s ease;
 }
 
 .result {
   color: var(--text);
-  font-size: 2.4rem;
+  font-size: 2.6rem;
   font-weight: 600;
   overflow-x: auto;
   white-space: nowrap;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.15);
+  transform-origin: right center;
+}
+
+.result.pop {
+  animation: pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+.result.shake {
+  animation: shake 0.4s ease;
+  color: #ff6b6b;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
 }
 
 .keys {
@@ -68,22 +129,26 @@ body {
 }
 
 .key {
+  position: relative;
+  overflow: hidden;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--key-bg);
   color: var(--text);
   font-size: 1.2rem;
   padding: 18px 0;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.05s ease;
+  isolation: isolate;
+  transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
 
 .key:hover {
   background: var(--key-bg-hover);
+  transform: translateY(-2px);
 }
 
 .key:active {
-  transform: scale(0.96);
+  transform: scale(0.94) translateY(0);
 }
 
 .key.wide {
@@ -91,7 +156,7 @@ body {
 }
 
 .key.op {
-  background: #3a3b45;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-dim);
 }
 
@@ -104,6 +169,7 @@ body {
 .key.accent:hover {
   background: rgba(255, 159, 67, 0.15);
   color: var(--accent-hover);
+  box-shadow: 0 0 16px var(--accent-glow);
 }
 
 .key.equals {
@@ -114,10 +180,28 @@ body {
 
 .key.equals:hover {
   background: var(--equals-hover);
+  box-shadow: 0 0 20px var(--equals-glow);
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(0);
+  animation: ripple-expand 0.55s ease-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes ripple-expand {
+  to {
+    transform: scale(2.8);
+    opacity: 0;
+  }
 }
 
 @media (max-width: 380px) {
   .result {
-    font-size: 2rem;
+    font-size: 2.1rem;
   }
 }

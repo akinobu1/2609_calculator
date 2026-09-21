@@ -21,6 +21,26 @@ function updateDisplay() {
   } else {
     expressionEl.textContent = "";
   }
+  animateDisplay(currentInput === "Error");
+}
+
+function animateDisplay(isError) {
+  resultEl.classList.remove("pop", "shake");
+  void resultEl.offsetWidth;
+  resultEl.classList.add(isError ? "shake" : "pop");
+}
+
+function spawnRipple(button, x, y) {
+  const rect = button.getBoundingClientRect();
+  const ripple = document.createElement("span");
+  const size = Math.max(rect.width, rect.height) * 1.2;
+  ripple.className = "ripple";
+  ripple.style.width = `${size}px`;
+  ripple.style.height = `${size}px`;
+  ripple.style.left = `${x - rect.left - size / 2}px`;
+  ripple.style.top = `${y - rect.top - size / 2}px`;
+  button.appendChild(ripple);
+  ripple.addEventListener("animationend", () => ripple.remove());
 }
 
 function formatNumber(value) {
@@ -107,6 +127,8 @@ function evaluate() {
 document.querySelector(".keys").addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+
+  spawnRipple(button, event.clientX, event.clientY);
 
   const { num, action } = button.dataset;
 
